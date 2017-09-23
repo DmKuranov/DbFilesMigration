@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       ">
+
+    <bean id="contextConfigProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:context.properties</value>
+            </list>
+        </property>
+        <property name="fileEncoding" value="UTF-8"/>
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+    </bean>
+
+    <bean id="defaultMigrationStrategyClass" class="java.lang.String">
+        <constructor-arg value="ru.dmkuranov.dbFilesMigration.service.processing.executors.FieldMigrationStrategyLogOnly"/>
+    </bean>
+
+    <bean id="fieldMigrationStrategies" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <bean class="#{defaultMigrationStrategyClass}"/>
+                <bean class="ru.dmkuranov.dbFilesMigration.service.processing.executors.FieldMigrationStrategyUpdateCopy"/>
+                <bean class="ru.dmkuranov.dbFilesMigration.service.processing.executors.FieldMigrationStrategyUpdateMove"/>
+            </list>
+        </constructor-arg>
+
+    </bean>
+
+    <bean id="fileTablesList" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <bean class="ru.dmkuranov.dbFilesMigration.domain.FileStoringTable">
+                    <constructor-arg name="tableName" value=.../>
+                    <constructor-arg name="idFieldName" value=.../>
+                    <constructor-arg name="storagePathPrefix" value=.../>
+                    <constructor-arg name="filePrefix" value=.../>
+                    <constructor-arg name="fileFieldNames">
+                        <list>
+                            <value.../value>
+                            <value.../value>
+                        </list>
+                    </constructor-arg>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+</beans>

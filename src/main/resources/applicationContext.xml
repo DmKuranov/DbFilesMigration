@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <import resource="data-config.xml"/>
+
+    <context:component-scan base-package="ru.dmkuranov.dbFilesMigration">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <bean id="dbPool" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <constructor-arg name="configuration">
+            <bean class="com.zaxxer.hikari.HikariConfig">
+                <property name="jdbcUrl" value="${db.url}"/>
+                <property name="driverClassName" value="${db.driverClass}"/>
+                <property name="username" value="${db.user}"/>
+                <property name="password" value="${db.password}"/>
+                <property name="connectionTestQuery" value="select 1"/>
+                <property name="maximumPoolSize" value="100"/>
+                <property name="autoCommit" value="false"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" primary="true">
+        <property name="dataSource" ref="dbPool"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dbPool"/>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" isolation="READ_COMMITTED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <bean name="fieldMigrationStrategy"
+          class="#{systemProperties['fieldMigrationStrategyClass'] != null ? systemProperties['fieldMigrationStrategyClass'] : defaultMigrationStrategyClass}"/>
+
+</beans>
